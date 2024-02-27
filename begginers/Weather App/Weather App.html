@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+	/* Set the font family for the entire body using
+     a prioritized list of font names */
+	body {
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		/* Set the background color of the body to a light gray shade */
+		background-color: #f4f4f4;
+		/* Remove default margin to ensure elements 
+        touch the edges of the body */
+		margin: 0;
+		/* Use Flexbox to create a flex container 
+        with vertically and horizontally centered content */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		/* Set the height of the body to 100% of the viewport height */
+		height: 100vh;
+		/* Ensure the background image covers the entire body and is centered */
+		background-size: cover;
+		background-position: center;
+		/* Apply a smooth transition effect to the background image change */
+		transition: background-image 0.5s ease-in-out;
+	}
+
+	/* Style for a container element with centered text alignment */
+	.container {
+		text-align: center;
+		/* Set the background color of the container to white */
+		background-color: #fff;
+		/* Apply padding to the container */
+		padding: 20px;
+		/* Add rounded corners to the container */
+		border-radius: 8px;
+		/* Apply a subtle shadow effect to the container */
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Style for level 1 heading (h1) elements */
+	h1 {
+		/* Set the text color to a dark shade */
+		color: #333;
+		/* Add bottom margin to create space below the heading */
+		margin-bottom: 20px;
+	}
+
+	/* Style for elements with class 'search-box' */
+	.search-box {
+		/* Add margin above and below the search box */
+		margin: 20px 0;
+	}
+
+	/* Style for input and select elements */
+	input,
+	select {
+		/* Add padding to the inside of the elements */
+		padding: 10px;
+		/* Set the width of the elements to 200 pixels */
+		width: 200px;
+		/* Add a 1-pixel solid border with a light gray color */
+		border: 1px solid #ccc;
+		/* Add rounded corners to the elements */
+		border-radius: 4px;
+		/* Add right margin to create space between elements */
+		margin-right: 8px;
+	}
+
+	/* Style for button element */
+	button {
+		/* Add padding to the inside of the button */
+		padding: 10px 16px;
+		/* Set the background color of the button */
+		background-color: #007bff;
+		/* Set the text color of the button to white */
+		color: #fff;
+		/* Remove the default button border */
+		border: none;
+		/* Add rounded corners to the button */
+		border-radius: 4px;
+		/* Set the cursor style to indicate interactivity */
+		cursor: pointer;
+	}
+
+	/* Style for button on hover state */
+	button:hover {
+		/* Change the background color when the button is hovered */
+		background-color: #0056b3;
+	}
+
+	/* Style for weather information */
+	.weather-info {
+		/* Add top margin to create space from the above elements */
+		margin-top: 20px;
+		/* Set font size to 18 pixels */
+		font-size: 18px;
+		/* Set text color to dark gray */
+		color: #333;
+	}
+
+	/* Style for temperature unit section */
+	.temperature-unit {
+		/* Add top margin to create space from the above elements */
+		margin-top: 10px;
+		/* Use flexbox to align items and justify content in the center */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* Style for labels within temperature unit section */
+	.temperature-unit label {
+		/* Add right margin to create space between labels */
+		margin-right: 8px;
+	}
+
+	/* Style for weather icon */
+	.weather-icon {
+		/* Add top margin to create space from the above elements */
+		margin-top: 20px;
+		/* Set width and height for the weather icon */
+		width: 50px;
+		height: 50px;
+	}
+
+	/* Style for error messages */
+	.error-message {
+		/* Set text color to red for error messages */
+		color: red;
+		/* Add top margin to create space from the above elements */
+		margin-top: 10px;
+	}
+	</style>
+	<title>Weather App</title>
+</head>
+
+<body>
+	<!-- Container for the entire weather application -->
+	<div class="container">
+		<!-- Heading for the weather application -->
+		<h1>Weather App</h1>
+
+		<!-- Search box containing country and city
+        selection, input field, and weather retrieval button -->
+		<div class="search-box">
+			<!-- Dropdown for selecting the country with
+             an onchange event to trigger city population -->
+			<select id="countrySelect" onchange="getCities()">
+				<!-- Default option prompting the user to select a country -->
+				<option value="" selected disabled>Select Country</option>
+			</select>
+
+			<!-- Dropdown for selecting the city, 
+            initially disabled until a country is chosen -->
+			<select id="citySelect" disabled>
+				<!-- Default option prompting the user to select a city -->
+				<option value="" selected disabled>Select City</option>
+				<!-- Cities will be populated based on the selected country -->
+			</select>
+			<!-- Input field for entering the city manually -->
+			<input type="text" id="cityInput" placeholder="Enter City">
+			<!-- Button to initiate the weather retrieval process -->
+			<button onclick="getWeather()">Get Weather</button>
+		</div>
+		<!-- Temperature unit selection section -->
+		<div class="temperature-unit">
+			<!-- Label and radio button for Celsius 
+            with an onchange event to update the temperature unit -->
+			<label for="celsius">Celsius</label>
+			<input type="radio" id="celsius" name="temperatureUnit" checked onchange="changeTemperatureUnit('C')">
+			<!-- Label and radio button for Fahrenheit
+             with an onchange event to update the temperature unit -->
+			<label for="fahrenheit">Fahrenheit</label>
+			<input type="radio" id="fahrenheit" name="temperatureUnit" onchange="changeTemperatureUnit('F')">
+		</div>
+		<!-- Display area for weather information -->
+		<div class="weather-info" id="weatherInfo"></div>
+		<!-- Image tag for displaying the weather icon -->
+		<img src="" alt="Weather Icon" class="weather-icon" id="weatherIcon">
+		<!-- Display area for error messages -->
+		<div class="error-message" id="errorMessage"></div>
+	</div>
+	<script>
+	// Function to populate countries in the country select
+	function populateCountries() {
+		// Get the HTML element for the country select dropdown
+		const countrySelect = document.getElementById('countrySelect');
+		// You can fetch a list of countries from 
+        // an API or use a predefined list
+		// For simplicity, using a hardcoded list here
+		const countries = ['USA', 'Canada', 'UK', 'Germany', 'France', 'India'];
+		// Iterate through the list of countries
+		countries.forEach(country => {
+			// Create an option element for each country
+			const option = document.createElement('option');
+			// Set the value of the option to the country name
+			option.value = country;
+			// Set the text content of the option to the country name
+			option.textContent = country;
+			// Append the option to the country select dropdown
+			countrySelect.appendChild(option);
+		});
+	}
+	// Function to populate cities based on the selected country
+	function getCities() {
+		// Get the HTML elements for the country and city select dropdowns
+		const countrySelect = document.getElementById('countrySelect');
+		const citySelect = document.getElementById('citySelect');
+		// Clear existing city options in the dropdown
+		citySelect.innerHTML = '<option value="" selected disabled>Select City</option>';
+		// Hardcoded city data for each country (you can fetch this dynamically)
+		const cityData = {
+			'USA': ['New York', 'Los Angeles', 'Chicago'],
+			'Canada': ['Toronto', 'Vancouver', 'Montreal'],
+			'UK': ['London', 'Manchester', 'Birmingham'],
+			'Germany': ['Berlin', 'Munich', 'Hamburg'],
+			'France': ['Paris', 'Marseille', 'Lyon'],
+			'India': ['Delhi', 'Mumbai', 'Bangalore']
+		};
+		// Get the value of the currently selected country in the dropdown
+		const selectedCountry = countrySelect.value;
+		// Check if the selected country has corresponding city data
+		if(selectedCountry in cityData) {
+			// Retrieve the list of cities for the selected country
+			const cities = cityData[selectedCountry];
+			// Iterate through the list of cities 
+            // and populate the city select dropdown
+			cities.forEach(city => {
+				const option = document.createElement('option');
+				option.value = city;
+				option.textContent = city;
+				citySelect.appendChild(option);
+			});
+			// Enable the city select dropdown
+			citySelect.disabled = false;
+		} else {
+			// Disable the city select dropdown if 
+            // no cities available for the selected country
+			citySelect.disabled = true;
+		}
+	}
+	// Initialize countries on page load
+	populateCountries();
+	</script>
+	<script>
+	// Function to fetch and display weather information
+	function getWeather() {
+		// Replace this API key with your OpenWeatherMap API key
+		const apiKey = 'bd5e378503939ddaee76f12ad7a97608';
+		// Get HTML elements for various components in the Weather App
+		const citySelect = document.getElementById('citySelect');
+		const cityInput = document.getElementById('cityInput');
+		const weatherInfo = document.getElementById('weatherInfo');
+		const weatherIcon = document.getElementById('weatherIcon');
+		const errorMessage = document.getElementById('errorMessage');
+		// Variable to store the city name
+		let cityName;
+		// If a city is entered manually, use that
+		if(cityInput.value.trim() !== '') {			
+			cityName = cityInput.value.trim();
+		} else if(citySelect.value !== '') {// Check if a city is selected from the dropdown
+			// If a city is selected from the dropdown, use that
+			cityName = citySelect.value;
+		} else {
+			// Display an error message if no city is selected or entered
+			errorMessage.textContent = 'Please select or enter a city';
+			return;
+		}
+		// Construct the API URL for fetching weather data
+		const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`;
+		// Fetch weather data from the OpenWeatherMap API
+		fetch(apiUrl).then(response => response.json()).then(data => {
+			// Check if the city is not found
+			if(data.cod === '404') {
+				errorMessage.textContent = 'City not found';
+			} else {
+				// Clear any previous error message
+				errorMessage.textContent = '';
+				// Extract relevant weather information
+				const temperature = data.main.temp;
+				const description = data.weather[0].description;
+				const city = data.name;
+				const iconCode = data.weather[0].icon;
+				// Display weather information
+				const result = `The weather in ${city} is ${description} with a temperature of ${temperature}C`;
+				weatherInfo.textContent = result;
+				// Display weather icon
+				const iconUrl = `http://openweathermap.org/img/w/${iconCode}.png`;
+				weatherIcon.src = iconUrl;
+				// Update background image based on weather condition
+				updateBackgroundImage(description);
+			}
+		}).catch(error => {
+			// Display an error message if there's
+            // an issue fetching weather data
+			errorMessage.textContent = 'Error fetching weather data';
+			console.error('Error fetching weather data:', error);
+		});
+	}
+	// Function to update the background image based on weather conditions
+	function updateBackgroundImage(weatherDescription) {
+		// Get the reference to the body element
+		const body = document.body;
+		// Define keywords associated with different weather conditions
+		const weatherKeywords = {
+			'Clear': 'clear sky',
+			'Clouds': 'cloud',
+			'Rain': 'rain',
+			'Drizzle': 'drizzle',
+			'Thunderstorm': 'thunderstorm',
+			'Snow': 'snow',
+			'Mist': 'mist',
+			'Smoke': 'smoke',
+			'Haze': 'haze',
+			'Dust': 'dust',
+			'Fog': 'fog',
+			'Sand': 'sand',
+			'Ash': 'ash',
+			'Squall': 'squall',
+			'Tornado': 'tornado'
+		};
+		// Iterate through each keyword in the weatherKeywords object
+		for(const keyword in weatherKeywords) {
+			// Check if the lowercase weather 
+            // description includes the current keyword
+			if(weatherDescription.toLowerCase().includes(weatherKeywords[keyword])) {
+				// Set the background image based on the matched keyword
+				body.style.backgroundImage = `url('images/${keyword.toLowerCase()}.jpg')`;
+				// Exit the loop after the first match
+				break;
+			}
+		}
+	}
+	// Function to change the temperature unit 
+    // (Celsius or Fahrenheit) and update the displayed temperature
+	function changeTemperatureUnit(unit) {
+		// Determine the target temperature unit
+		const temperatureUnit = unit === 'C' ? 'C' : 'F';
+		// Get the reference to the weather information element
+		const weatherInfo = document.getElementById('weatherInfo');
+		// Check if the current temperature unit is Celsius
+		if(weatherInfo.textContent.includes('C')) {
+			// Convert Celsius to Fahrenheit
+			const temperatureValue = parseFloat(weatherInfo.textContent.match(/-?\d+/));
+			const temperatureFahrenheit = (temperatureValue * (9 / 5) + 32).toFixed(1);
+			// Update the weather information with the converted temperature in Fahrenheit
+			weatherInfo.textContent = weatherInfo.textContent.replace(/-?\d+\.?\d*C/, `${temperatureFahrenheit}F`);
+		} else if(weatherInfo.textContent.includes('F')) {
+			// Convert Fahrenheit to Celsius
+			const temperatureValue = parseFloat(weatherInfo.textContent.match(/-?\d+/));
+			const temperatureCelsius = ((temperatureValue - 32) * (5 / 9)).toFixed(1);
+			// Update the weather information with the converted temperature in Celsius
+			weatherInfo.textContent = weatherInfo.textContent.replace(/-?\d+\.?\d*F/, `${temperatureCelsius}C`);
+		}
+	}
+	</script>
+</body>
+
+</html>
